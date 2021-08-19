@@ -11,6 +11,8 @@ import {
   median
 } from './functions/statisticHelpers'
 
+const cors = require('cors');
+
 const axios = require('axios');
 const app = express();
 const PORT = 8000;
@@ -20,7 +22,7 @@ const GOTHENBURG_COORD = {
     lon: 11.97,
 }
 
-interface RowData {
+type RowData = {
   date: string,
   meanTemperature: number,
   medianTemperature: number,
@@ -43,6 +45,8 @@ function createData(
         maxTemperature,
     }
 }
+
+app.use(cors());
 
 app.get('/', async (req,res) => {
 
