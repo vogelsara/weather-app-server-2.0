@@ -13,13 +13,25 @@ import {
 
 const cors = require('cors');
 
-const axios = require('axios');
+import axios from 'axios';
 const app = express();
 const PORT = 8000;
 const API_KEY = 'ded5bd16eed0f94476ad6420e0bf3455'
 const GOTHENBURG_COORD = {
-    lat: 57.71,
-    lon: 11.97,
+  lat: 57.71,
+  lon: 11.97,
+}
+
+type TemperatureData = {
+  [key: string]: number[];
+}
+
+type HourlyData = {
+  temp: number
+}
+
+type ApiResponse = {
+  hourly: Array<HourlyData>
 }
 
 type RowData = {
@@ -46,25 +58,41 @@ function createData(
     }
 }
 
+function queryParamToNumber(x: any): number | undefined {
+  if (typeof x === "string") {
+    const parsedX = parseInt(x)
+    if (typeof parsedX === 'number') {
+      if (!isNaN(parsedX)) {
+        return parsedX
+      }
+    }
+  }
+  return undefined
+}
+
 app.use(cors());
 
 app.get('/', async (req,res) => {
 
-  let temperatures: any = {}
+  const lat: number = queryParamToNumber(req.query.lat) ?? GOTHENBURG_COORD.lat
+  const lon: number = queryParamToNumber(req.query.lon) ?? GOTHENBURG_COORD.lon  
+
+  let temperatures: TemperatureData = {}
 
   for (let day = 1; day <= 4; day++) {
 
     const timestamp = getLastSecondOfDay(getTimestampDaysBeforeToday(day))
 
-    const response = await axios.get(`http://api.openweathermap.org/data/2.5/onecall/timemachine?lat=${GOTHENBURG_COORD.lat}&lon=${GOTHENBURG_COORD.lon}&dt=${timestamp}&units=metric&appid=${API_KEY}`)
+    const response = await axios.get<ApiResponse>(`http://api.openweathermap.org/data/2.5/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${timestamp}&units=metric&appid=${API_KEY}`)
 
     temperatures[getShortDateString(getTimestampDaysBeforeToday(day))] =
               response.data.hourly.map(
-                  (hourData: { temp: number; }) => {
+                  (hourData: HourlyData) => {
                       return hourData.temp
                   }
               )
-  } 
+  }
+
   let rows: RowData[] = []
 
   Object.keys(temperatures).forEach((date) => {
