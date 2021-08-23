@@ -1,5 +1,7 @@
 import express from 'express';
 
+import getWeatherData from './services/getWeatherData'
+
 import {
   getTimestampDaysBeforeToday,
   getShortDateString,
@@ -17,7 +19,6 @@ import axios, { AxiosResponse } from 'axios';
 
 const app = express();
 const PORT = 8000;
-const API_KEY = 'ded5bd16eed0f94476ad6420e0bf3455'
 const GOTHENBURG_COORD = {
   lat: 57.71,
   lon: 11.97,
@@ -72,15 +73,6 @@ function queryParamToNumber(x: any): number | undefined {
 }
 
 app.use(cors());
-
-const baseUrl = 'http://api.openweathermap.org/data/2.5/onecall'
-
-async function getWeatherData(lat: number, lon: number, day: number): Promise<AxiosResponse<ApiResponse>> {
-  const timestamp = getTimestampDaysBeforeToday(day)
-  const timestampEndOfDay = getLastSecondOfDay(timestamp)
-
-  return axios.get<ApiResponse>(`${baseUrl}/timemachine?lat=${lat}&lon=${lon}&dt=${timestampEndOfDay}&units=metric&appid=${API_KEY}`)
-}
 
 function createRows(temperatures: TemperatureData): RowData[] {
   let rows: RowData[] = []
