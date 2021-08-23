@@ -1,4 +1,4 @@
-export function average(array: Array<number>) {
+export function average(array: number[]): number {
     if (array.length === 0) return 0
     const total = array.reduce<number>(
         (accumulator, currentElement) => accumulator + currentElement,
@@ -7,7 +7,7 @@ export function average(array: Array<number>) {
     return total / array.length
 }
 
-export function median(array: Array<number>) {
+export function median(array: number[]): number {
     if (array.length === 0) return 0
 
     array = array.slice().sort(function (a, b) {

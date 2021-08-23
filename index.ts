@@ -11,9 +11,10 @@ import {
   median
 } from './functions/statisticHelpers'
 
-const cors = require('cors');
+import cors from 'cors';
 
 import axios from 'axios';
+
 const app = express();
 const PORT = 8000;
 const API_KEY = 'ded5bd16eed0f94476ad6420e0bf3455'
@@ -31,7 +32,7 @@ type HourlyData = {
 }
 
 type ApiResponse = {
-  hourly: Array<HourlyData>
+  hourly: HourlyData[];
 }
 
 type RowData = {
@@ -81,11 +82,12 @@ app.get('/', async (req,res) => {
 
   for (let day = 1; day <= 4; day++) {
 
-    const timestamp = getLastSecondOfDay(getTimestampDaysBeforeToday(day))
+    const timestamp = getTimestampDaysBeforeToday(day)
+    const timestampEndOfDay = getLastSecondOfDay(timestamp)
 
-    const response = await axios.get<ApiResponse>(`http://api.openweathermap.org/data/2.5/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${timestamp}&units=metric&appid=${API_KEY}`)
+    const response = await axios.get<ApiResponse>(`http://api.openweathermap.org/data/2.5/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${timestampEndOfDay}&units=metric&appid=${API_KEY}`)
 
-    temperatures[getShortDateString(getTimestampDaysBeforeToday(day))] =
+    temperatures[getShortDateString(timestamp)] =
               response.data.hourly.map(
                   (hourData: HourlyData) => {
                       return hourData.temp
