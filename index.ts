@@ -3,25 +3,12 @@ import express from 'express';
 import getWeatherData from './services/getWeatherData'
 
 import {
-  getTimestampDaysBeforeToday,
-  getShortDateString,
-  getLastSecondOfDay,
-} from './functions/dateHelpers'
-
-import {
-  average,
-  median
-} from './functions/statisticHelpers'
-
-import {
   createRows,
   extractTemperatures,
   getDate
 } from './functions/utils'
 
 import cors from 'cors';
-
-import axios, { AxiosResponse } from 'axios';
 
 const app = express();
 const PORT = 8000;
@@ -34,27 +21,9 @@ type TemperatureData = {
   [key: string]: number[];
 }
 
-type HourlyData = {
-  temp: number
-}
-
-type ApiResponse = {
-  hourly: HourlyData[];
-}
-
-type RowData = {
-  date: string,
-  meanTemperature: number,
-  medianTemperature: number,
-  minTemperature: number,
-  maxTemperature: number
-}
-
-
-
 function queryParamToNumber(x: any): number | undefined {
   if (typeof x === "string") {
-    const parsedX = parseInt(x)
+    const parsedX = parseFloat(x)
     if (typeof parsedX === 'number') {
       if (!isNaN(parsedX)) {
         return parsedX
@@ -66,20 +35,20 @@ function queryParamToNumber(x: any): number | undefined {
 
 app.use(cors());
 
-
-
 app.get('/', async (req,res) => {
   const lat: number = queryParamToNumber(req.query.lat) ?? GOTHENBURG_COORD.lat
-  const lon: number = queryParamToNumber(req.query.lon) ?? GOTHENBURG_COORD.lon  
+  const lon: number = queryParamToNumber(req.query.lon) ?? GOTHENBURG_COORD.lon
+
+  const promises = [1,2,3,4].map(day => getWeatherData(lat, lon, day))
+  const allResponses = await Promise.all(promises);
 
   let temperatures: TemperatureData = {}
+  allResponses.forEach((response, index) => {
+    temperatures[getDate(index+1)] = extractTemperatures(response)
+  });
 
-  for (let day = 1; day <= 4; day++) {
-    const response = await getWeatherData(lat, lon, day)
-    temperatures[getDate(day)] = extractTemperatures(response)
-  }
-
-  res.send(createRows(temperatures));
+  const rows = createRows(temperatures)
+  res.send(rows)
 })
 
 app.listen(PORT, () => {

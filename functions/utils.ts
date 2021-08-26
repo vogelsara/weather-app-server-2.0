@@ -1,4 +1,3 @@
-import { AxiosResponse } from "axios"
 import { getShortDateString, getTimestampDaysBeforeToday } from "./dateHelpers"
 import { average, median } from "./statisticHelpers"
 
@@ -54,17 +53,17 @@ export function createRows(temperatures: TemperatureData): RowData[] {
     })
   
     return rows
-  }
+}
   
-  export function extractTemperatures(weatherData: AxiosResponse<ApiResponse>): number[] {
-    return weatherData.data.hourly.map(
-      (hourData: HourlyData) => {
-          return hourData.temp
-      }
-    )
-  }
-  
-  export function getDate(day: number): string {
-    const timestamp = getTimestampDaysBeforeToday(day)
-    return getShortDateString(timestamp)
-  }
+export function extractTemperatures(weatherData: ApiResponse): number[] {
+return weatherData.hourly.map(
+    (hourData) => {
+        return hourData.temp
+    }
+)
+}
+
+export function getDate(day: number): string {
+const timestamp = getTimestampDaysBeforeToday(day)
+return getShortDateString(timestamp)
+}
