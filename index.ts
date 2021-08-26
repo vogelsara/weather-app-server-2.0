@@ -35,7 +35,7 @@ function queryParamToNumber(x: any): number | undefined {
 
 app.use(cors());
 
-app.get('/', async (req,res) => {
+app.get('/history', async (req,res) => {
   const lat: number = queryParamToNumber(req.query.lat) ?? GOTHENBURG_COORD.lat
   const lon: number = queryParamToNumber(req.query.lon) ?? GOTHENBURG_COORD.lon
 
