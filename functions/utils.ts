@@ -1,5 +1,7 @@
 import { getShortDateString, getTimestampDaysBeforeToday } from "./dateHelpers"
 import { average, median } from "./statisticHelpers"
+import { ApiHistoryResponse } from "../services/getWeatherHistory"
+import { ApiForecastResponse } from "../services/getWeatherForecast"
 
 type TemperatureData = {
     [key: string]: number[];
@@ -11,14 +13,6 @@ type RowData = {
     medianTemperature: number,
     minTemperature: number,
     maxTemperature: number
-}
-
-type HourlyData = {
-    temp: number
-}
-  
-  type ApiResponse = {
-    hourly: HourlyData[];
 }
 
 function createData(
@@ -55,12 +49,25 @@ export function createRows(temperatures: TemperatureData): RowData[] {
     return rows
 }
   
-export function extractTemperatures(weatherData: ApiResponse): number[] {
+export function extractHistoricTemperatures(weatherData: ApiHistoryResponse): number[] {
 return weatherData.hourly.map(
     (hourData) => {
         return hourData.temp
     }
 )
+}
+
+export function extractForecastTemperatures(forecastData: ApiForecastResponse): TemperatureData {
+    let temperatures: TemperatureData = {}
+    forecastData.list.forEach(hourlyData => {
+        const date = getShortDateString(new Date(hourlyData.dt * 1000))
+        if (date in temperatures) {
+            temperatures[date].push(hourlyData.main.temp)
+        } else {
+            temperatures[date] = [hourlyData.main.temp]
+        }
+    });
+    return temperatures
 }
 
 export function getDate(day: number): string {
